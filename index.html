@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ทำใบเสนอราคา – มหาชัยไอศกรีม</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&family=Prompt:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f6f1ea; --panel:#ffffff; --ink:#2b2320; --muted:#7a6d66; --line:#e6ddd3;
+  --accent:#1f6f5c; --accent-ink:#fff; --accent-soft:#e3f1ec; --danger:#b3261e; --field:#fffdfa;
+  --shadow:0 1px 2px rgba(60,40,20,.06),0 6px 20px rgba(60,40,20,.06);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1a1716; --panel:#252120; --ink:#f1ebe6; --muted:#a89c94; --line:#3a3431;
+    --accent:#4fb89b; --accent-ink:#0f1f1a; --accent-soft:#1f3530; --danger:#ff8a80; --field:#1f1c1b;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1a1716; --panel:#252120; --ink:#f1ebe6; --muted:#a89c94; --line:#3a3431;
+  --accent:#4fb89b; --accent-ink:#0f1f1a; --accent-soft:#1f3530; --danger:#ff8a80; --field:#1f1c1b;
+  --shadow:none;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Sarabun",Tahoma,"Leelawadee UI",sans-serif;font-size:16px;line-height:1.5}
+header.top{display:flex;align-items:center;gap:12px;padding:16px 20px 8px;max-width:1400px;margin:0 auto}
+header.top .logo{width:40px;height:40px;border-radius:12px;background:var(--accent);display:grid;place-items:center;font-size:22px;flex:none}
+header.top h1{font-family:"Prompt","Sarabun",sans-serif;font-size:20px;margin:0;font-weight:600}
+header.top p{margin:0;color:var(--muted);font-size:13px}
+.tabs{display:none;gap:6px;padding:4px 16px 8px;max-width:1400px;margin:0 auto}
+.tabs button{flex:1;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:10px;border-radius:12px;font:inherit;font-weight:600}
+.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+main{display:grid;grid-template-columns:minmax(360px,520px) 1fr;gap:20px;padding:8px 20px 120px;max-width:1400px;margin:0 auto;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 12px;font-family:"Prompt","Sarabun",sans-serif;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px}
+details.card>summary{list-style:none;cursor:pointer;font-family:"Prompt","Sarabun",sans-serif;font-weight:600;display:flex;justify-content:space-between}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::after{content:"▾";color:var(--muted)}
+details.card[open]>summary{margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--muted);margin:0 0 4px}
+.f{margin-bottom:10px}
+input,textarea,select{width:100%;font:inherit;color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:10px;padding:9px 11px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea{resize:vertical;min-height:44px}
+.row{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+.row3{display:grid;gap:10px;grid-template-columns:1fr 1fr 1fr}
+.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:9px 14px;border-radius:10px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--danger)}
+.btn:disabled{opacity:.6;cursor:wait}
+.item{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--field)}
+.item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700}
+.item-head .acts{display:flex;gap:4px}
+.amt{font-size:13px;color:var(--muted);text-align:right;margin-top:2px}
+.amt b{color:var(--ink)}
+.hint{font-size:12px;color:var(--muted);margin-top:-4px;margin-bottom:10px}
+.addbar{display:flex;gap:8px;flex-wrap:wrap}
+.addbar select{flex:1;min-width:160px}
+.list{display:flex;flex-direction:column;gap:6px}
+.li{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--field)}
+.li .t{flex:1;min-width:0}
+.li .t div:first-child{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .t div:last-child{font-size:12px;color:var(--muted)}
+.empty{color:var(--muted);font-size:14px}
+/* preview */
+.pv{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.pvwrap{background:#d9d2ca;border-radius:16px;padding:14px;overflow:hidden}
+:root[data-theme="dark"] .pvwrap{background:#302b28}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pvwrap{background:#302b28}}
+#scaleBox{position:relative;width:100%}
+#scaler{transform-origin:top left;width:794px;position:absolute;top:0;left:0}
+/* bottom bar */
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:12px;z-index:10}
+.bar .tot{flex:1;min-width:0}
+.bar .tot small{display:block;color:var(--muted);font-size:12px}
+#paperSel{width:auto;flex:none;padding:9px 8px;font-weight:600}
+.bar .tot b{font-size:20px;font-family:"Prompt","Sarabun",sans-serif}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 12px calc(16px + env(safe-area-inset-bottom,0px))}
+.modal[hidden]{display:none}
+.modal-in{background:var(--panel);border-radius:16px;padding:14px;max-width:640px;width:100%}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.modal-msg{margin:0 0 10px;font-size:14px;color:var(--muted)}
+.modal-msg b{color:var(--ink)}
+#imgOut{width:100%;height:auto;display:block;border:1px solid var(--line);-webkit-touch-callout:default;user-select:auto}
+@media (max-width:420px){ .bar{gap:8px;padding-left:12px;padding-right:12px} #dlBtn{padding:9px 10px} .bar .tot b{font-size:17px} }
+@media (max-width:900px){
+  .tabs{display:flex}
+  main{grid-template-columns:1fr;padding:8px 14px 120px}
+  main[data-view="form"] .pv{display:none}
+  main[data-view="preview"] .formcol{display:none}
+  .pv{position:static}
+  .pvwrap{padding:8px;border-radius:12px}
+  header.top{padding:14px 16px 6px}
+}
+
+/* ===== The A4 sheet (always white paper) — 794×1123px = A4 at 96dpi ===== */
+.sheet{-webkit-text-size-adjust:none;text-size-adjust:none;width:794px;min-height:1123px;overflow:hidden;background:#fff;color:#000;padding:34px 38px 26px;font-family:"Sarabun",Tahoma,sans-serif;font-size:15px;line-height:1.45}
+.sheet .t1{text-align:center;font-size:28px;font-weight:700;margin:0;line-height:1.3}
+.sheet .t2{text-align:center;font-size:21px;font-weight:700;margin:0 0 16px;line-height:1.3}
+.sheet table{width:100%;border-collapse:collapse}
+.sheet .hdr td{border:1px solid #000;padding:5px 8px;vertical-align:top}
+.sheet .hdr .lbl{width:70px;border-right:none}
+.sheet .hdr .val{border-left:none}
+.sheet .hdr .meta{width:175px;padding:0}
+.sheet .meta-in{display:flex;flex-direction:column;height:100%}
+.sheet .meta-in div{flex:1;display:flex;align-items:center;justify-content:flex-end;padding:6px 10px}
+.sheet .meta-in div+div{border-top:1px solid #000}
+.sheet .it{margin-top:-1px}
+.sheet .it th{border:1px solid #000;font-weight:400;padding:3px 4px;text-align:center;font-size:14px;white-space:nowrap}
+.sheet .it thead tr:first-child th{border-bottom:none;padding-top:5px}
+.sheet .it thead tr:last-child th{border-top:none;padding-bottom:5px}
+.sheet .it td{border-left:1px solid #000;border-right:1px solid #000;padding:3px 10px;vertical-align:top}
+.sheet .it tbody tr:first-child td{padding-top:16px}
+.sheet .c{text-align:center}
+.sheet .nm{font-weight:700}
+.sheet .dt{white-space:pre-wrap;margin-top:4px;line-height:1.4}
+.sheet .gap td{padding-top:14px}
+.sheet .note{font-weight:700;font-size:13.5px;white-space:pre-wrap}
+.sheet .red{color:#d00000}
+.sheet .blue{color:#0645c9}
+.sheet .tot td{border:1px solid #000;padding:8px 10px;font-weight:700}
+.sheet .tot .lab{text-align:right}
+.sheet .baht td{border:1px solid #000;text-align:center;font-weight:700;padding:8px}
+.sheet .foot{margin:14px 0 0 40px;font-size:13px;line-height:1.45}
+.sheet .sign{text-align:center;margin:10px 30px 0 auto;width:280px;font-size:13px;line-height:1.45}
+.sheet .confirm{margin:12px 0 0 40px;font-size:13px;line-height:1.9}
+.sheet .confirm .i{padding-left:50px}
+.sheet .confirm .i2{padding-left:120px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo">🍨</div>
+  <div>
+    <h1>ใบเสนอราคา มหาชัยไอศกรีม</h1>
+    <p>กรอกรายการ → ดูตัวอย่าง → ดาวน์โหลด PDF · <span style="opacity:.7">v1.4</span></p>
+  </div>
+</header>
+<div class="tabs">
+  <button id="tabForm" class="on">✏️ กรอกข้อมูล</button>
+  <button id="tabPv">📄 ดูตัวอย่าง</button>
+</div>
+
+<main id="main" data-view="form">
+  <section class="formcol">
+    <div class="card">
+      <h3>ข้อมูลใบเสนอราคา <button class="btn sm ghost" id="newBtn">＋ ใบใหม่</button></h3>
+      <div class="row">
+        <div class="f"><label>เลขที่</label><input id="q_no"></div>
+        <div class="f"><label>วันที่</label><input id="q_date" type="date"></div>
+      </div>
+      <div class="f"><label>เรื่อง</label><input id="q_subject"></div>
+      <div class="f"><label>เรียน (ชื่อลูกค้า / งาน)</label><textarea id="q_to" rows="2" placeholder="เช่น โรงพยาบาลเลิดสิน ใช้งานเลี้ยงวันที่ 30 กันยายน 2569"></textarea></div>
+      <div class="f"><label>เลขที่ผู้เสียภาษีของลูกค้า (ถ้ามี)</label><input id="q_tax" inputmode="numeric" placeholder="เว้นว่างได้"></div>
+    </div>
+
+    <div class="card">
+      <h3>รายการสินค้า</h3>
+      <div id="items"></div>
+      <div class="addbar">
+        <select id="catSel"><option value="">＋ เพิ่มจากสินค้าประจำ…</option></select>
+        <button class="btn" id="addBlank">＋ รายการว่าง</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>มัดจำ / หมายเหตุ</h3>
+      <div class="row">
+        <div class="f"><label>ค่ามัดจำ (บาท)</label><input id="q_dep" type="number" inputmode="decimal" min="0" placeholder="เว้นว่าง = ไม่มี"></div>
+        <div class="f"><label>วันชำระยอดที่เหลือ</label><input id="q_pay" type="date"></div>
+      </div>
+      <div class="hint">ถ้าใส่มัดจำ ระบบจะเขียนหมายเหตุ (ตัวแดง/น้ำเงิน) และคำนวณยอดคงเหลือให้เอง</div>
+      <div class="f"><label>หมายเหตุเพิ่มเติม</label><textarea id="q_note" rows="2"></textarea></div>
+    </div>
+
+    <details class="card" id="histCard">
+      <summary>ใบเสนอราคาที่เคยทำ</summary>
+      <div class="list" id="hist"></div>
+    </details>
+
+    <details class="card">
+      <summary>สินค้าประจำ</summary>
+      <div class="hint" style="margin-top:0">กด ⭐ ที่รายการสินค้าเพื่อบันทึกไว้ใช้ครั้งหน้า</div>
+      <div class="list" id="catList"></div>
+    </details>
+
+    <details class="card">
+      <summary>ตั้งค่าผู้เสนอราคา</summary>
+      <div class="row">
+        <div class="f"><label>คำนำหน้า (จาก)</label><input id="s_title"></div>
+        <div class="f"><label>ชื่อ-สกุล</label><input id="s_name"></div>
+      </div>
+      <div class="row">
+        <div class="f"><label>ชื่อร้าน</label><input id="s_shop"></div>
+        <div class="f"><label>เบอร์โทร</label><input id="s_phone" inputmode="tel"></div>
+      </div>
+      <div class="f"><label>ชื่อในช่องลงนาม</label><input id="s_signer"></div>
+      <div class="row3">
+        <div class="f"><label>เลขที่ นำหน้า</label><input id="s_prefix"></div>
+        <div class="f"><label>เลขถัดไป</label><input id="s_next" type="number" inputmode="numeric"></div>
+        <div class="f"><label>ยืนราคา (วัน)</label><input id="s_valid" type="number" inputmode="numeric"></div>
+      </div>
+      <div class="hint">ข้อมูลทั้งหมดเก็บไว้ในเครื่องนี้ (เบราว์เซอร์นี้) เท่านั้น</div>
+    </details>
+  </section>
+
+  <section class="pv">
+    <div class="pvwrap">
+      <div id="scaleBox"><div id="scaler"><div class="sheet" id="sheet"></div></div></div>
+    </div>
+  </section>
+</main>
+
+<div class="bar">
+  <div class="tot"><small>รวมเป็นเงินทั้งสิ้น</small><b id="barTotal">0</b> <span style="color:var(--muted)">บาท</span></div>
+  <select id="paperSel" title="ขนาดกระดาษ" aria-label="ขนาดกระดาษ"></select>
+  <button class="btn primary" id="dlBtn">⬇ ดาวน์โหลด PDF</button>
+</div>
+<div class="toast" id="toast"></div>
+<div id="pdfModal" class="modal" hidden>
+  <div class="modal-in" style="max-width:420px;margin-top:20vh">
+    <div class="modal-head"><b>PDF พร้อมแล้ว ✓</b><button class="btn sm" id="pdfClose">ปิด</button></div>
+    <p class="modal-msg" id="pdfName" style="word-break:break-all"></p>
+    <a id="pdfLink" class="btn primary" style="display:block;text-align:center;text-decoration:none;padding:13px;margin-bottom:8px">⬇ บันทึกลงโฟลเดอร์ Downloads</a>
+    <button id="pdfShare" class="btn" style="width:100%;padding:12px" hidden>📤 แชร์ (ไลน์ / บันทึกลงไฟล์)</button>
+    <p class="modal-msg" style="margin:10px 0 0;font-size:12.5px">ถ้า Safari ถามว่า “ดาวน์โหลดไหม” ให้กด <b>ดาวน์โหลด</b> ไฟล์จะอยู่ในแอป <b>ไฟล์ → ดาวน์โหลด</b></p>
+  </div>
+</div>
+<div id="imgModal" class="modal" hidden>
+  <div class="modal-in">
+    <div class="modal-head"><b>บันทึกเป็นรูปภาพแทน</b><button class="btn sm" id="imgClose">ปิด</button></div>
+    <p class="modal-msg">ลิงก์นี้ดาวน์โหลดไฟล์ PDF ไม่ได้สำหรับผู้ที่ไม่ได้อยู่ในบัญชีเจ้าของ<br><b>กดค้างที่รูปด้านล่าง</b> แล้วเลือก “บันทึกลงในรูปภาพ” หรือ “แชร์” เพื่อส่งไลน์ได้เลย</p>
+    <img id="imgOut" alt="ใบเสนอราคา">
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- storage (per-device) ---------- */
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const DEF_SETTINGS = {title:"คุณ", name:"สมเกียรติ เกตมาตย์", shop:"มหาชัยไอศกรีม", phone:"081-763-3239",
+  signer:"นายสมเกียรติ เกตมาตย์", prefix:"144/", next:171, valid:30};
+const DEF_CATALOG = [
+  {name:"ชุดตักมหาชัยไอศกรีมกะทิสด (เหมาเสิร์ฟ)", detail:"แต่ละถ้วยสามารถใส่ท็อปปิ้งได้ 3 อย่าง", price:40},
+  {name:"ชุดมหาชัยไอศกรีม ออกบูธ", detail:"ชุดออกบูธ 1 ชุด ประกอบด้วยสินค้าทั้งหมดดังนี้\n มหาชัยไอศกรีม กะทิสด ( 1 ถัง )\n ท็อปปิ้ง 7 กก.\n  - มันเชื่อม 1 กก.\n  - เผือกเชื่อม 1 กก.\n  - ฟักทองเชื่อม 1 กก.\n  - ถั่วคั่ว 1 กก.\n  - ข้าวเหนียวมูล 1 กก.\n  - วุ้นมะพร้าว 1 กก.\n  - สับปะรดเชื่อม 1 กก.\n ถ้วย+ช้อนพลาสติก 100 ชุด\n โคนกรอบ 40 อัน\n ขนมปัง 1 แพ (12 ชิ้น)\n นมสดคาร์เนชั่น 1 กระป๋อง\n\nมีพนักงานตัก\n\nค่าบริการจัดส่ง", price:5000},
+  {name:"ค่าบริการนอกสถานที่", detail:"", price:300}
+];
+let S = Object.assign({}, DEF_SETTINGS, LS.get("mq_settings", {}));
+// paper sizes in mm; the sheet is always laid out 794px wide and its height follows the paper's proportions
+const PAPERS = {
+  A4:    {label:"A4",     w:210,   h:297},
+  Letter:{label:"Letter", w:215.9, h:279.4},
+  Legal: {label:"Legal",  w:215.9, h:355.6},
+  A5:    {label:"A5",     w:148,   h:210}
+};
+if(!PAPERS[S.paper]) S.paper="A4";
+const paper = ()=>PAPERS[S.paper];
+const sheetH = ()=>Math.round(794*paper().h/paper().w);
+let CAT = LS.get("mq_catalog", DEF_CATALOG);
+let HIST = LS.get("mq_history", []);
+let Q = LS.get("mq_draft", null) || newQuote();
+// one-time rename: ไอศกรีมมหาชัย -> มหาชัยไอศกรีม in saved data
+if(!LS.get("mq_rename1", false)){
+  const OLD="\u0e44\u0e2d\u0e28\u0e01\u0e23\u0e35\u0e21\u0e21\u0e2b\u0e32\u0e0a\u0e31\u0e22", NEW="มหาชัยไอศกรีม";
+  const fix=o=>JSON.parse(JSON.stringify(o).split(OLD).join(NEW));
+  S=fix(S); CAT=fix(CAT); Q=fix(Q);
+  LS.set("mq_settings",S); LS.set("mq_catalog",CAT); LS.set("mq_draft",Q); LS.set("mq_rename1",true);
+}
+
+function today(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function newQuote(){ return {no:S.prefix+S.next, date:today(), subject:"ขอเสนอราคามหาชัยไอศกรีม", to:"", tax:"",
+  items:[{name:"",detail:"",qty:"",price:""}], dep:"", pay:"", note:""}; }
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = v => { const n = parseFloat(String(v).replace(/,/g,"")); return isFinite(n) ? n : 0; };
+const fmt = n => n.toLocaleString("en-US",{minimumFractionDigits: (Math.round(n*100)%100)?2:0, maximumFractionDigits:2});
+const MONTHS = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+function dShort(iso){ if(!iso) return ""; const [y,m,d]=iso.split("-").map(Number); return d+"/"+m+"/"+(y+543); }
+function dLong(iso){ if(!iso) return ""; const [y,m,d]=iso.split("-").map(Number); return d+" "+MONTHS[m-1]+" "+(y+543); }
+function itemAmt(it){ const p=num(it.price); return String(it.qty).trim()==="" ? p : num(it.qty)*p; }
+function total(){ return Q.items.reduce((s,it)=>s+itemAmt(it),0); }
+
+function bahtText(n){
+  n = Math.round(Math.abs(n)*100)/100;
+  const D=["","หนึ่ง","สอง","สาม","สี่","ห้า","หก","เจ็ด","แปด","เก้า"], U=["","สิบ","ร้อย","พัน","หมื่น","แสน"];
+  function read(s){
+    s = s.replace(/^0+/,""); if(!s) return "";
+    if(s.length>6) return read(s.slice(0,-6))+"ล้าน"+read(s.slice(-6));
+    let r=""; const L=s.length;
+    for(let i=0;i<L;i++){
+      const dg=+s[i], pos=L-i-1; if(!dg) continue;
+      if(pos===1&&dg===1) r+="สิบ";
+      else if(pos===1&&dg===2) r+="ยี่สิบ";
+      else if(pos===0&&dg===1&&L>1&&/[1-9]/.test(s.slice(0,-1))) r+="เอ็ด";
+      else r+=D[dg]+U[pos];
+    }
+    return r;
+  }
+  const baht=Math.floor(n), st=Math.round((n-baht)*100);
+  if(!baht&&!st) return "ศูนย์บาทถ้วน";
+  return (baht?read(String(baht))+"บาท":"")+(st?read(String(st))+"สตางค์":"ถ้วน");
+}
+
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2600); }
+function saveDraft(){ LS.set("mq_draft", Q); }
+
+/* ---------- sheet rendering ---------- */
+function renderSheet(){
+  const tot = total();
+  const rows = Q.items.map((it,i)=>{
+    const qtyShow = String(it.qty).trim()==="" ? "" : fmt(num(it.qty));
+    const priceShow = String(it.price).trim()==="" ? "" : fmt(num(it.price));
+    const amt = (String(it.price).trim()==="") ? "" : fmt(itemAmt(it));
+    return `<tr class="${i?"gap":""}"><td class="c nm">${i+1}</td>
+      <td><div class="nm">${esc(it.name)}</div>${it.detail?`<div class="dt">${esc(it.detail)}</div>`:""}</td>
+      <td class="c nm">${qtyShow}</td><td class="c nm">${priceShow}</td><td class="c nm">${amt}</td></tr>`;
+  }).join("");
+  let notes = "";
+  const dep = num(Q.dep);
+  if(dep>0){
+    notes += `<div class="red">หมายเหตุ : ยืนยันการสั่งซื้อ มีค่ามัดจำล่วงหน้า ${fmt(dep)} บาท</div>`;
+    notes += `<div class="blue">ยอดที่เหลือสามารถชำระหน้างาน${Q.pay?" วันที่ "+dLong(Q.pay):""}</div>`;
+    notes += `<div class="blue">(${fmt(tot)} - ${fmt(dep)} = ${fmt(tot-dep)} บาท ชำระในวันรับสินค้า)</div>`;
+  }
+  if(Q.note.trim()) notes += `<div>${dep>0?"":"หมายเหตุ : "}${esc(Q.note)}</div>`;
+  const noteRow = notes ? `<tr class="gap"><td></td><td><div class="note">${notes}</div></td><td></td><td></td><td></td></tr>` : "";
+  const from = `${esc(S.title)} ${esc(S.name)}&nbsp;&nbsp;${esc(S.shop)} ${esc(S.phone)}`;
+  $("sheet").innerHTML = `
+    <div class="t1">ใบเสนอราคา</div><div class="t2">Quotation</div>
+    <table class="hdr">
+      <tr><td class="lbl">เรื่อง :</td><td class="val">${esc(Q.subject)}</td>
+          <td class="meta" rowspan="3"><div class="meta-in"><div>เลขที่ ${esc(Q.no)}</div><div>วันที่&nbsp;&nbsp;${dShort(Q.date)}</div></div></td></tr>
+      <tr><td class="lbl">เรียน :</td><td class="val" style="white-space:pre-wrap">${esc(Q.to)}${Q.tax.trim()?`<br>เลขที่ผู้เสียภาษีอากร: ${esc(Q.tax)}`:""}</td></tr>
+      <tr><td class="lbl">จาก :</td><td class="val">${from}</td></tr>
+    </table>
+    <table class="it">
+      <colgroup><col style="width:7%"><col style="width:52%"><col style="width:11%"><col style="width:14%"><col style="width:16%"></colgroup>
+      <thead>
+        <tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>ราคาต่อหน่วย</th><th>จำนวนเงิน (บาท)</th></tr>
+        <tr><th>No.</th><th>List</th><th>Quantity</th><th>Unit Price</th><th>Amount (Baht)</th></tr>
+      </thead>
+      <tbody id="itBody">${rows}${noteRow}<tr id="filler" class="filler-row"><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      <tbody>
+        <tr class="tot"><td colspan="2" style="border-right:1px solid #000"></td><td colspan="2" class="lab">รวมเป็นเงินทั้งสิ้น</td><td class="c">${fmt(tot)}</td></tr>
+        <tr class="baht"><td colspan="5">${bahtText(tot)}</td></tr>
+      </tbody>
+    </table>
+    <div class="foot">ขอยืนยันราคาที่เสนอดังกล่าวภายใน ${esc(S.valid)} วัน นับจากวันนี้เป็นต้นไป<br>
+      The above prices are valid for ${esc(S.valid)} days from date of this quotation</div>
+    <div class="sign">ขอแสดงความนับถือ<br>(${esc(S.signer)})</div>
+    <div class="confirm">ยืนยันการสั่งซื้อ ...............................................................<br>
+      <span class="i">(......................................................................)</span><br>
+      <span class="i2">ว/ด/ป: .................................</span></div>`;
+  // stretch the item area so the page looks like the original
+  fitFiller($("sheet"));
+  $("barTotal").textContent = fmt(tot);
+  fitPreview();
+}
+// stretch the item area so the table reaches the bottom of the page (only measurable while laid out)
+function fitFiller(sheet){
+  const filler = sheet.querySelector("#filler, .filler-row");
+  sheet.style.minHeight = sheetH()+"px";
+  if(!filler || !sheet.offsetParent && getComputedStyle(sheet.parentNode).position!=="fixed") return false;
+  filler.style.height="0px"; sheet.style.minHeight="0";
+  const natural = sheet.offsetHeight;
+  sheet.style.minHeight = sheetH()+"px";
+  if(!natural) return false;
+  filler.style.height = Math.max(20, sheetH() - natural) + "px";
+  return true;
+}
+function fitPreview(){
+  const box=$("scaleBox"), sc=$("scaler");
+  const w = box.clientWidth; if(!w) return;
+  const s = Math.min(1, w/794);
+  sc.style.transform = `scale(${s})`;
+  box.style.height = ($("sheet").offsetHeight*s) + "px";
+}
+window.addEventListener("resize", fitPreview);
+
+/* ---------- form rendering ---------- */
+function bindField(id, obj, key, after){
+  const el=$(id); el.value = obj[key] ?? "";
+  el.oninput = ()=>{ obj[key]=el.value; (after||saveDraft)(); renderSheet(); };
+}
+function renderQuoteFields(){
+  bindField("q_no",Q,"no"); bindField("q_date",Q,"date"); bindField("q_subject",Q,"subject");
+  bindField("q_to",Q,"to"); bindField("q_tax",Q,"tax"); bindField("q_dep",Q,"dep");
+  bindField("q_pay",Q,"pay"); bindField("q_note",Q,"note");
+}
+function renderSettings(){
+  const save=()=>{ S.next=parseInt(S.next)||1; LS.set("mq_settings",S); };
+  [["s_title","title"],["s_name","name"],["s_shop","shop"],["s_phone","phone"],["s_signer","signer"],["s_prefix","prefix"],["s_next","next"],["s_valid","valid"]]
+    .forEach(([id,k])=>bindField(id,S,k,save));
+}
+function renderItems(){
+  const box=$("items");
+  box.innerHTML = Q.items.map((it,i)=>`
+    <div class="item" data-i="${i}">
+      <div class="item-head"><span>รายการที่ ${i+1}</span>
+        <span class="acts">
+          <button class="btn sm ghost" data-a="up" title="เลื่อนขึ้น" ${i?"":"disabled"}>↑</button>
+          <button class="btn sm ghost" data-a="star" title="บันทึกเป็นสินค้าประจำ">⭐</button>
+          <button class="btn sm ghost danger" data-a="del" title="ลบ">✕</button>
+        </span></div>
+      <div class="f"><label>ชื่อสินค้า/บริการ (ตัวหนา)</label><input data-k="name" value="${esc(it.name)}"></div>
+      <div class="f"><label>รายละเอียด (ขึ้นบรรทัดใหม่ได้)</label><textarea data-k="detail" rows="${Math.min(8,Math.max(2,(it.detail.match(/\n/g)||[]).length+1))}">${esc(it.detail)}</textarea></div>
+      <div class="row">
+        <div class="f" style="margin:0"><label>จำนวน</label><input data-k="qty" type="number" inputmode="decimal" placeholder="เว้นว่างได้" value="${esc(it.qty)}"></div>
+        <div class="f" style="margin:0"><label>ราคาต่อหน่วย</label><input data-k="price" type="number" inputmode="decimal" value="${esc(it.price)}"></div>
+      </div>
+      <div class="amt">จำนวนเงิน <b data-amt>${fmt(itemAmt(it))}</b> บาท</div>
+    </div>`).join("") || `<p class="empty">ยังไม่มีรายการ</p>`;
+  box.querySelectorAll(".item").forEach(card=>{
+    const i=+card.dataset.i, it=Q.items[i];
+    card.querySelectorAll("[data-k]").forEach(el=>{
+      el.oninput=()=>{ it[el.dataset.k]=el.value; card.querySelector("[data-amt]").textContent=fmt(itemAmt(it)); saveDraft(); renderSheet(); };
+    });
+    card.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{
+      const a=b.dataset.a;
+      if(a==="del"){ Q.items.splice(i,1); }
+      if(a==="up"){ [Q.items[i-1],Q.items[i]]=[Q.items[i],Q.items[i-1]]; }
+      if(a==="star"){
+        if(!it.name.trim()){ toast("ใส่ชื่อสินค้าก่อนนะครับ"); return; }
+        const ex=CAT.findIndex(c=>c.name===it.name.trim());
+        const rec={name:it.name.trim(), detail:it.detail, price:num(it.price)};
+        if(ex>=0) CAT[ex]=rec; else CAT.push(rec);
+        LS.set("mq_catalog",CAT); renderCatalog(); toast(ex>=0?"อัปเดตสินค้าประจำแล้ว":"บันทึกเป็นสินค้าประจำแล้ว"); return;
+      }
+      saveDraft(); renderItems(); renderSheet();
+    });
+  });
+}
+function renderCatalog(){
+  $("catSel").innerHTML = `<option value="">＋ เพิ่มจากสินค้าประจำ…</option>` +
+    CAT.map((c,i)=>`<option value="${i}">${esc(c.name)} – ${fmt(num(c.price))} บ.</option>`).join("");
+  $("catList").innerHTML = CAT.length ? CAT.map((c,i)=>`
+    <div class="li"><div class="t"><div>${esc(c.name)}</div><div>${fmt(num(c.price))} บาท</div></div>
+    <button class="btn sm ghost danger" data-del="${i}">ลบ</button></div>`).join("") : `<p class="empty">ยังไม่มีสินค้าประจำ</p>`;
+  $("catList").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
+    if(!confirm("ลบ \""+CAT[+b.dataset.del].name+"\" ออกจากสินค้าประจำ?")) return;
+    CAT.splice(+b.dataset.del,1); LS.set("mq_catalog",CAT); renderCatalog();
+  });
+}
+function renderHistory(){
+  $("hist").innerHTML = HIST.length ? HIST.map((h,i)=>`
+    <div class="li"><div class="t"><div>${esc(h.no)} · ${esc((h.to||"").split("\n")[0]||"(ไม่มีชื่อ)")}</div>
+      <div>${dShort(h.date)} · ${fmt(h.items.reduce((s,it)=>s+itemAmt(it),0))} บาท</div></div>
+      <button class="btn sm" data-open="${i}">เปิด</button>
+      <button class="btn sm" data-copy="${i}" title="ทำใบใหม่จากใบนี้">ทำซ้ำ</button>
+      <button class="btn sm ghost danger" data-hdel="${i}" title="ลบ">✕</button></div>`).join("") : `<p class="empty">ยังไม่มี (จะบันทึกอัตโนมัติเมื่อดาวน์โหลด PDF)</p>`;
+  const clone=o=>JSON.parse(JSON.stringify(o));
+  $("hist").querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{ Q=clone(HIST[+b.dataset.open]); afterLoad("เปิดใบ "+Q.no+" แล้ว"); });
+  $("hist").querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{ Q=clone(HIST[+b.dataset.copy]); Q.no=S.prefix+S.next; Q.date=today(); Q.pay=""; afterLoad("สร้างใบใหม่ "+Q.no+" จากใบเดิมแล้ว"); });
+  $("hist").querySelectorAll("[data-hdel]").forEach(b=>b.onclick=()=>{ const h=HIST[+b.dataset.hdel]; if(!confirm("ลบใบ "+h.no+" ออกจากประวัติ?")) return; HIST.splice(+b.dataset.hdel,1); LS.set("mq_history",HIST); renderHistory(); });
+}
+function afterLoad(msg){ saveDraft(); renderQuoteFields(); renderItems(); renderSheet(); window.scrollTo({top:0,behavior:"smooth"}); toast(msg); }
+
+/* ---------- actions ---------- */
+$("addBlank").onclick=()=>{ Q.items.push({name:"",detail:"",qty:"",price:""}); saveDraft(); renderItems(); renderSheet(); };
+$("catSel").onchange=e=>{ const c=CAT[+e.target.value]; e.target.value=""; if(!c) return;
+  Q.items = Q.items.filter(it=>it.name.trim()||it.detail.trim()||String(it.price).trim());
+  Q.items.push({name:c.name, detail:c.detail||"", qty:"", price:String(c.price)}); saveDraft(); renderItems(); renderSheet(); toast("เพิ่ม "+c.name+" แล้ว ใส่จำนวนได้เลย"); };
+$("newBtn").onclick=()=>{ if(!confirm("เริ่มใบเสนอราคาใหม่? (ใบที่ดาวน์โหลดแล้วยังอยู่ในประวัติ)")) return; Q=newQuote(); afterLoad("เริ่มใบใหม่ เลขที่ "+Q.no); };
+const setView=v=>{ $("main").dataset.view=v; $("tabForm").classList.toggle("on",v==="form"); $("tabPv").classList.toggle("on",v==="preview"); if(v==="preview") requestAnimationFrame(renderSheet); window.scrollTo({top:0}); };
+$("tabForm").onclick=()=>setView("form"); $("tabPv").onclick=()=>setView("preview");
+
+let inFrame = true; try{ inFrame = window.self !== window.top; }catch(e){ inFrame = true; }
+function showImage(canvas){
+  $("imgOut").src = canvas.toDataURL("image/jpeg",0.92);
+  $("imgModal").hidden = false;
+}
+$("imgClose").onclick = ()=>{ $("imgModal").hidden = true; };
+$("imgModal").onclick = e=>{ if(e.target.id==="imgModal") $("imgModal").hidden = true; };
+/* ---------- normal website (e.g. GitHub Pages): real file download ---------- */
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+let pdfUrl = null;
+function offerPdf(blob, fname){
+  if(pdfUrl) URL.revokeObjectURL(pdfUrl);         // keep the latest file alive until the next one is made
+  pdfUrl = URL.createObjectURL(blob);
+  const file = new File([blob], fname, {type:"application/pdf"});
+  if(!isIOS){                                        // desktop / Android: save straight to Downloads
+    const a=document.createElement("a"); a.href=pdfUrl; a.download=fname; a.rel="noopener";
+    document.body.appendChild(a); a.click(); a.remove();
+    toast("บันทึกลงโฟลเดอร์ Downloads แล้ว ✓");
+    return;
+  }
+  // iPhone/iPad: Safari only saves when the tap itself is on the link, so give a real button to tap
+  const link=$("pdfLink"); link.href=pdfUrl; link.download=fname;
+  $("pdfName").textContent=fname;
+  const canShare = navigator.canShare && navigator.canShare({files:[file]});
+  $("pdfShare").hidden = !canShare;
+  $("pdfShare").onclick = async ()=>{ try{ await navigator.share({files:[file], title:fname}); }catch(e){} };
+  $("pdfModal").hidden=false;
+}
+$("pdfLink").addEventListener("click", ()=>{ setTimeout(()=>{ $("pdfModal").hidden=true; toast("ดูไฟล์ได้ที่แอป ไฟล์ → ดาวน์โหลด"); },400); });
+$("pdfClose").onclick=()=>{ $("pdfModal").hidden=true; };
+$("pdfModal").onclick=e=>{ if(e.target.id==="pdfModal") $("pdfModal").hidden=true; };
+let downloadsP = null;
+try { downloadsP = window.claude && window.claude.use ? window.claude.use("downloads") : null; } catch(e){ downloadsP=null; }
+
+$("dlBtn").onclick = async ()=>{
+  const btn=$("dlBtn");
+  if(!Q.items.some(it=>it.name.trim())){ toast("ยังไม่มีรายการสินค้า"); return; }
+  btn.disabled=true; btn.textContent="กำลังสร้าง PDF…";
+  try{
+    if(document.fonts){
+      try{ await Promise.all(["400","600","700"].map(w=>document.fonts.load(w+' 15px "Sarabun"',"ใบเสนอราคา Quotation 0123"))); }catch(e){}
+      await document.fonts.ready;
+    }
+    const fname = ("ใบเสนอราคา "+Q.no+" "+((Q.to||"").split("\n")[0]).slice(0,40)).replace(/[\\/:*?"<>|]+/g,"-").trim()+".pdf";
+    // render an unscaled copy of the sheet pinned at the top-left corner, then place it on exactly one A4 page
+    const host=document.createElement("div");
+    host.style.cssText="position:fixed;left:0;top:0;width:794px;z-index:-1;pointer-events:none";
+    const copy=$("sheet").cloneNode(true); copy.removeAttribute("id"); const cf=copy.querySelector("#filler"); if(cf) cf.removeAttribute("id");
+    host.appendChild(copy); document.body.appendChild(host);
+    fitFiller(copy);                     // measure on the visible copy, so it is right even when the preview tab is hidden
+    let canvas;
+    try{
+      canvas = await html2canvas(copy,{scale:2.5,backgroundColor:"#ffffff",useCORS:true,x:0,y:0,scrollX:0,scrollY:0,windowWidth:794,windowHeight:sheetH()});
+    } finally { host.remove(); }
+    const PW=paper().w, PH=paper().h;
+    const pdf = new window.jspdf.jsPDF({unit:"mm",format:[PW,PH],orientation:"portrait"});
+    let w=PW, h=canvas.height*PW/canvas.width;
+    if(h>PH){ w=w*PH/h; h=PH; }            // too long? shrink to fit one page
+    pdf.addImage(canvas.toDataURL("image/jpeg",0.95),"JPEG",(PW-w)/2,0,w,h);
+    const blob = pdf.output("blob");
+
+    // save to history + bump running number
+    const snap=JSON.parse(JSON.stringify(Q));
+    const hi=HIST.findIndex(h=>h.no===Q.no);
+    if(hi>=0) HIST.splice(hi,1);
+    HIST.unshift(snap); HIST=HIST.slice(0,100); LS.set("mq_history",HIST); renderHistory();
+    if(Q.no===S.prefix+S.next){ S.next=(parseInt(S.next)||0)+1; LS.set("mq_settings",S); $("s_next").value=S.next; }
+
+    const dl = downloadsP ? await downloadsP : null;
+    if(dl){
+      try{ await dl.save({filename:fname, data:blob}); toast("บันทึก PDF แล้ว ✓"); }
+      catch(err){
+        const c = err && err.code;
+        if(c==="declined") toast("ยกเลิกการบันทึก");
+        else if(c==="rate_limited") toast("รอสักครู่แล้วกดใหม่นะครับ");
+        else showImage(canvas);            // e.g. viewer isn't a member of the owner's account
+      }
+    } else if(inFrame){
+      showImage(canvas);                   // embedded page without download permission
+    } else {
+      offerPdf(blob, fname);
+    }
+  }catch(e){ console.error(e); toast("สร้าง PDF ไม่สำเร็จ ลองอีกครั้งนะครับ"); }
+  finally{ btn.disabled=false; btn.textContent="⬇ ดาวน์โหลด PDF"; }
+};
+
+/* ---------- paper size ---------- */
+$("paperSel").innerHTML = Object.entries(PAPERS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join("");
+$("paperSel").value = S.paper;
+$("paperSel").onchange = e=>{ S.paper=e.target.value; LS.set("mq_settings",S); renderSheet(); toast("ขนาดกระดาษ: "+paper().label+" ("+paper().w+"×"+paper().h+" มม.)"); };
+
+/* ---------- init ---------- */
+renderSettings(); renderQuoteFields(); renderCatalog(); renderItems(); renderHistory(); renderSheet();
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(renderSheet);
+})();
+</script>
+</body>
+</html>
