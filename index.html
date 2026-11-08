@@ -64,6 +64,9 @@ textarea{resize:vertical;min-height:44px}
 .item{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--field)}
 .item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700}
 .item-head .acts{display:flex;gap:4px}
+.pricebox{display:flex;gap:6px}
+.pricebox .sign{flex:none;width:44px;padding:0;font-size:18px}
+.item.neg .pricebox input,.item.neg .amt b{color:var(--danger)}
 .amt{font-size:13px;color:var(--muted);text-align:right;margin-top:2px}
 .amt b{color:var(--ink)}
 .hint{font-size:12px;color:var(--muted);margin-top:-4px;margin-bottom:10px}
@@ -148,7 +151,7 @@ textarea{resize:vertical;min-height:44px}
   <div class="logo">🍨</div>
   <div>
     <h1>ใบเสนอราคา มหาชัยไอศกรีม</h1>
-    <p>กรอกรายการ → ดูตัวอย่าง → ดาวน์โหลด PDF · <span style="opacity:.7">v1.4</span></p>
+    <p>กรอกรายการ → ดูตัวอย่าง → ดาวน์โหลด PDF · <span style="opacity:.7">v1.5</span></p>
   </div>
 </header>
 <div class="tabs">
@@ -175,6 +178,7 @@ textarea{resize:vertical;min-height:44px}
       <div class="addbar">
         <select id="catSel"><option value="">＋ เพิ่มจากสินค้าประจำ…</option></select>
         <button class="btn" id="addBlank">＋ รายการว่าง</button>
+        <button class="btn" id="addDisc">－ ส่วนลด</button>
       </div>
     </div>
 
@@ -330,8 +334,9 @@ function renderSheet(){
   const tot = total();
   const rows = Q.items.map((it,i)=>{
     const qtyShow = String(it.qty).trim()==="" ? "" : fmt(num(it.qty));
-    const priceShow = String(it.price).trim()==="" ? "" : fmt(num(it.price));
-    const amt = (String(it.price).trim()==="") ? "" : fmt(itemAmt(it));
+    const hasPrice = /\d/.test(String(it.price));
+    const priceShow = hasPrice ? fmt(num(it.price)) : "";
+    const amt = hasPrice ? fmt(itemAmt(it)) : "";
     return `<tr class="${i?"gap":""}"><td class="c nm">${i+1}</td>
       <td><div class="nm">${esc(it.name)}</div>${it.detail?`<div class="dt">${esc(it.detail)}</div>`:""}</td>
       <td class="c nm">${qtyShow}</td><td class="c nm">${priceShow}</td><td class="c nm">${amt}</td></tr>`;
@@ -427,17 +432,33 @@ function renderItems(){
       <div class="f"><label>รายละเอียด (ขึ้นบรรทัดใหม่ได้)</label><textarea data-k="detail" rows="${Math.min(8,Math.max(2,(it.detail.match(/\n/g)||[]).length+1))}">${esc(it.detail)}</textarea></div>
       <div class="row">
         <div class="f" style="margin:0"><label>จำนวน</label><input data-k="qty" type="number" inputmode="decimal" placeholder="เว้นว่างได้" value="${esc(it.qty)}"></div>
-        <div class="f" style="margin:0"><label>ราคาต่อหน่วย</label><input data-k="price" type="number" inputmode="decimal" value="${esc(it.price)}"></div>
+        <div class="f" style="margin:0"><label>ราคาต่อหน่วย</label>
+          <div class="pricebox"><button type="button" class="btn sign" data-a="sign" title="สลับบวก/ลบ (ใช้กับส่วนลด)">±</button><input data-k="price" type="text" inputmode="decimal" autocomplete="off" placeholder="0" value="${esc(it.price)}"></div></div>
       </div>
       <div class="amt">จำนวนเงิน <b data-amt>${fmt(itemAmt(it))}</b> บาท</div>
     </div>`).join("") || `<p class="empty">ยังไม่มีรายการ</p>`;
   box.querySelectorAll(".item").forEach(card=>{
     const i=+card.dataset.i, it=Q.items[i];
+    updateItemCard(card,it);
     card.querySelectorAll("[data-k]").forEach(el=>{
-      el.oninput=()=>{ it[el.dataset.k]=el.value; card.querySelector("[data-amt]").textContent=fmt(itemAmt(it)); saveDraft(); renderSheet(); };
+      el.oninput=()=>{
+        if(el.dataset.k==="price"){
+          let v=el.value.replace(/[−–—]/g,"-").replace(/[^\d.,-]/g,"");
+          const neg=v.trim().startsWith("-"); v=v.replace(/-/g,"");
+          const cleaned=(neg?"-":"")+v; if(cleaned!==el.value) el.value=cleaned;
+        }
+        it[el.dataset.k]=el.value; updateItemCard(card,it); saveDraft(); renderSheet();
+      };
     });
     card.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{
       const a=b.dataset.a;
+      if(a==="sign"){
+        const inp=card.querySelector('[data-k="price"]'); let v=String(it.price||"").trim();
+        v = v.startsWith("-") ? v.slice(1) : "-"+v;
+        it.price=v; inp.value=v; updateItemCard(card,it); saveDraft(); renderSheet();
+        inp.focus(); try{ inp.setSelectionRange(v.length,v.length); }catch(e){}
+        return;
+      }
       if(a==="del"){ Q.items.splice(i,1); }
       if(a==="up"){ [Q.items[i-1],Q.items[i]]=[Q.items[i],Q.items[i-1]]; }
       if(a==="star"){
@@ -450,6 +471,10 @@ function renderItems(){
       saveDraft(); renderItems(); renderSheet();
     });
   });
+}
+function updateItemCard(card,it){
+  card.querySelector("[data-amt]").textContent=fmt(itemAmt(it));
+  card.classList.toggle("neg", itemAmt(it)<0 || String(it.price).trim().startsWith("-"));
 }
 function renderCatalog(){
   $("catSel").innerHTML = `<option value="">＋ เพิ่มจากสินค้าประจำ…</option>` +
@@ -478,6 +503,12 @@ function afterLoad(msg){ saveDraft(); renderQuoteFields(); renderItems(); render
 
 /* ---------- actions ---------- */
 $("addBlank").onclick=()=>{ Q.items.push({name:"",detail:"",qty:"",price:""}); saveDraft(); renderItems(); renderSheet(); };
+$("addDisc").onclick=()=>{
+  Q.items.push({name:"ส่วนลด",detail:"",qty:"",price:"-"}); saveDraft(); renderItems(); renderSheet();
+  const inp=$("items").querySelector('.item:last-child [data-k="price"]');
+  if(inp){ inp.scrollIntoView({block:"center",behavior:"smooth"}); inp.focus(); try{ inp.setSelectionRange(1,1); }catch(e){} }
+  toast("ใส่จำนวนเงินส่วนลดได้เลย (ติดลบให้อัตโนมัติ)");
+};
 $("catSel").onchange=e=>{ const c=CAT[+e.target.value]; e.target.value=""; if(!c) return;
   Q.items = Q.items.filter(it=>it.name.trim()||it.detail.trim()||String(it.price).trim());
   Q.items.push({name:c.name, detail:c.detail||"", qty:"", price:String(c.price)}); saveDraft(); renderItems(); renderSheet(); toast("เพิ่ม "+c.name+" แล้ว ใส่จำนวนได้เลย"); };
